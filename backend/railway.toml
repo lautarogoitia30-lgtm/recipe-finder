@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "gunicorn recipe_finder.wsgi --bind 0.0.0.0:$PORT"
-healthcheckPath = "/api/recipes/health/"
-healthcheckTimeout = 30
+startCommand = "./start.sh"
+healthcheckPath = "/"
+healthcheckTimeout = 120
 restartPolicyType = "on_failure"
