@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-gray-50 text-gray-900 font-sans;
+    /* Safe area para notch de iPhone */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  /* Mejorar scrolling en iOS */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Prevenir zoom en inputs en iOS */
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+@layer utilities {
+  /* Ocultar scrollbar pero mantener scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
