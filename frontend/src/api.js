@@ -3,7 +3,7 @@
 // Con manejo robusto de errores y timeouts
 // ==========================================
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://recipe-finder-32pw.onrender.com/api'
+const API_BASE = 'https://recipe-finder-32pw.onrender.com/api'
 const REQUEST_TIMEOUT = 10000 // 10 segundos
 
 // Token helpers
