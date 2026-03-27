@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getRecipeDetail } from '../api'
 import { translateIngredient, translateMeasure, translateCategory, translateArea } from '../translations'
+import { translateRecipeName, translateInstructions } from '../translationService'
 import FavoriteButton from '../components/FavoriteButton'
 
 export default function RecipeDetail() {
@@ -9,17 +10,33 @@ export default function RecipeDetail() {
   const [recipe, setRecipe] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [translating, setTranslating] = useState(false)
+  const [translatedName, setTranslatedName] = useState('')
+  const [translatedInstructions, setTranslatedInstructions] = useState('')
+  const [showTranslation, setShowTranslation] = useState(true)
 
   const loadRecipe = useCallback(async () => {
     setLoading(true)
     setError(null)
+    setTranslating(true)
     try {
       const data = await getRecipeDetail(id)
       setRecipe(data.recipe)
+      
+      // Traducir nombre e instrucciones
+      if (data.recipe) {
+        const [name, instructions] = await Promise.all([
+          translateRecipeName(data.recipe.strMeal),
+          translateInstructions(data.recipe.strInstructions)
+        ])
+        setTranslatedName(name)
+        setTranslatedInstructions(instructions)
+      }
     } catch (err) {
       setError(err.message || 'No se pudo cargar la receta')
     } finally {
       setLoading(false)
+      setTranslating(false)
     }
   }, [id])
 
@@ -85,6 +102,10 @@ export default function RecipeDetail() {
     }
   }
 
+  // Usar traducción o original
+  const displayName = showTranslation && translatedName ? translatedName : recipe.strMeal
+  const displayInstructions = showTranslation && translatedInstructions ? translatedInstructions : recipe.strInstructions
+
   return (
     <div className="max-w-3xl mx-auto animate-fade-up">
       {/* Back button */}
@@ -98,11 +119,41 @@ export default function RecipeDetail() {
         Volver al inicio
       </Link>
 
+      {/* Traduciendo... */}
+      {translating && (
+        <div className="mb-4 p-3 bg-primary-50 border border-primary-100 rounded-xl flex items-center gap-3">
+          <svg className="animate-spin h-5 w-5 text-primary-600" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <span className="text-primary-700 text-sm font-medium">Traduciendo receta...</span>
+        </div>
+      )}
+
+      {/* Toggle traducción */}
+      {translatedName && translatedInstructions && (
+        <div className="mb-4 flex items-center justify-between">
+          <button
+            onClick={() => setShowTranslation(!showTranslation)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              showTranslation 
+                ? 'bg-primary-100 text-primary-700' 
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+            </svg>
+            {showTranslation ? 'Ver en inglés' : 'Ver en español'}
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-6 sm:mb-8">
         <div className="flex-1">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-4 leading-tight">
-            {recipe.strMeal}
+            {displayName}
           </h1>
           <div className="flex flex-wrap gap-2">
             {recipe.strCategory && (
@@ -126,7 +177,7 @@ export default function RecipeDetail() {
         <div onClick={(e) => e.preventDefault()}>
           <FavoriteButton
             recipeId={recipe.idMeal}
-            recipeName={recipe.strMeal}
+            recipeName={showTranslation && translatedName ? translatedName : recipe.strMeal}
             recipeThumb={recipe.strMealThumb}
           />
         </div>
@@ -136,7 +187,7 @@ export default function RecipeDetail() {
       <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden mb-8 shadow-card-hover">
         <img
           src={recipe.strMealThumb}
-          alt={recipe.strMeal}
+          alt={displayName}
           className="w-full h-56 sm:h-80 md:h-96 object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
@@ -175,7 +226,7 @@ export default function RecipeDetail() {
       </section>
 
       {/* Instrucciones */}
-      {recipe.strInstructions && (
+      {displayInstructions && (
         <section className="mb-8">
           <div className="flex items-center gap-2 mb-5">
             <div className="w-8 h-8 bg-gradient-to-br from-secondary-400 to-secondary-600 rounded-lg flex items-center justify-center shadow-md">
@@ -187,7 +238,7 @@ export default function RecipeDetail() {
           </div>
           
           <div className="bg-white rounded-2xl border border-slate-100 shadow-soft p-5 sm:p-7">
-            {recipe.strInstructions.split('\n').filter(Boolean).map((para, i) => (
+            {displayInstructions.split('\n').filter(Boolean).map((para, i) => (
               <div key={i} className="flex gap-4 mb-4 last:mb-0">
                 <div className="shrink-0 w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold mt-0.5">
                   {i + 1}

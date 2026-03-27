@@ -2,7 +2,10 @@ import { Link } from 'react-router-dom'
 import { translateCategory } from '../translations'
 import FavoriteButton from './FavoriteButton'
 
-export default function RecipeCard({ recipe }) {
+export default function RecipeCard({ recipe, translatedName }) {
+  // Usar nombre traducido si está disponible, sino el original
+  const displayName = translatedName || recipe.strMeal || recipe.strMeal
+
   return (
     <Link
       to={`/recipe/${recipe.idMeal}`}
@@ -11,8 +14,8 @@ export default function RecipeCard({ recipe }) {
       <div className="relative aspect-[4/3] overflow-hidden">
         {/* Imagen con overlay en hover */}
         <img
-          src={recipe.strMealThumb}
-          alt={recipe.strMeal}
+          src={recipe.strMealThumb || recipe.strMealThumb}
+          alt={displayName}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"
         />
@@ -27,16 +30,16 @@ export default function RecipeCard({ recipe }) {
         >
           <FavoriteButton
             recipeId={recipe.idMeal}
-            recipeName={recipe.strMeal}
-            recipeThumb={recipe.strMealThumb}
+            recipeName={displayName}
+            recipeThumb={recipe.strMealThumb || recipe.strMealThumb}
           />
         </div>
 
         {/* Badge de categoría en móvil */}
-        {recipe.strCategory && (
+        {(recipe.strCategory || recipe.strCategory) && (
           <div className="absolute bottom-3 left-3 sm:hidden">
             <span className="badge-primary backdrop-blur-sm">
-              {translateCategory(recipe.strCategory)}
+              {translateCategory(recipe.strCategory || recipe.strCategory)}
             </span>
           </div>
         )}
@@ -45,18 +48,18 @@ export default function RecipeCard({ recipe }) {
       {/* Contenido */}
       <div className="p-4">
         <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-tight mb-2">
-          {recipe.strMeal}
+          {displayName}
         </h3>
         
         <div className="flex items-center justify-between">
-          {recipe.strCategory && (
+          {(recipe.strCategory || recipe.strCategory) && (
             <span className="hidden sm:inline-flex badge-primary">
-              {translateCategory(recipe.strCategory)}
+              {translateCategory(recipe.strCategory || recipe.strCategory)}
             </span>
           )}
-          {recipe.strArea && (
+          {(recipe.strArea || recipe.strArea) && (
             <span className="badge-slate ml-auto">
-              {recipe.strArea}
+              {recipe.strArea || recipe.strArea}
             </span>
           )}
         </div>

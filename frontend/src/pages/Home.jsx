@@ -2,11 +2,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { getCategories, getRandomRecipe } from '../api'
 import { translateCategory } from '../translations'
+import { translateRecipeName } from '../translationService'
 import RecipeCard from '../components/RecipeCard'
 
 export default function Home() {
   const [categories, setCategories] = useState([])
   const [featured, setFeatured] = useState(null)
+  const [featuredName, setFeaturedName] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -24,7 +26,13 @@ export default function Home() {
         setCategories(catResult.value.categories?.slice(0, 8) || [])
       }
       if (randResult.status === 'fulfilled') {
-        setFeatured(randResult.value.recipe || null)
+        const recipe = randResult.value.recipe || null
+        setFeatured(recipe)
+        // Traducir nombre de receta destacada
+        if (recipe?.strMeal) {
+          const translated = await translateRecipeName(recipe.strMeal)
+          setFeaturedName(translated)
+        }
       }
 
       // Solo mostrar error si AMBAS fallaron
@@ -117,7 +125,7 @@ export default function Home() {
             <div className="md:w-1/2 relative overflow-hidden">
               <img
                 src={featured.strMealThumb}
-                alt={featured.strMeal}
+                alt={featuredName || featured.strMeal}
                 className="w-full h-64 md:h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent md:hidden" />
@@ -130,7 +138,7 @@ export default function Home() {
                 </span>
               )}
               <h3 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors">
-                {featured.strMeal}
+                {featuredName || featured.strMeal}
               </h3>
               <p className="text-slate-500 text-sm leading-relaxed line-clamp-3 mb-5">
                 {featured.strInstructions}
