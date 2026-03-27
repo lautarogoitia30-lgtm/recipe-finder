@@ -59,7 +59,7 @@ ROOT_URLCONF = "recipe_finder.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+            "DIRS": [BASE_DIR / "staticfiles"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -96,8 +96,8 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = []
+STATIC_ROOT = BASE_DIR / "staticfiles_collected"
+STATICFILES_DIRS = [BASE_DIR / "staticfiles"]
 
 # Check if React build exists and add it
 REACT_BUILD_DIR = BASE_DIR / "staticfiles" / "frontend"
