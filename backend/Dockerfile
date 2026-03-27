@@ -9,8 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends libpq-dev gcc &
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir psycopg2-binary
 
 COPY . .
 
-CMD python manage.py migrate --noinput 2>/dev/null; gunicorn recipe_finder.wsgi --bind 0.0.0.0:${PORT:-8000} --timeout 120
+RUN python manage.py collectstatic --noinput 2>/dev/null || true
+
+CMD python manage.py migrate --noinput 2>/dev/null; gunicorn recipe_finder.wsgi --bind 0.0.0.0:$PORT --timeout 120
