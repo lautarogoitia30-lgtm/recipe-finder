@@ -13,9 +13,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-slate-50">
           <Header />
-          <main className="max-w-6xl mx-auto px-4 py-4 sm:py-8 pb-20 sm:pb-8">
+          <main className="max-w-6xl mx-auto px-4 py-6 sm:py-10 pb-20 sm:pb-10">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/search" element={<SearchResults />} />

@@ -43,66 +43,103 @@ export default function Home() {
   }, [loadData])
 
   return (
-    <div className="space-y-8 sm:space-y-12">
-      {/* Hero */}
-      <section className="text-center py-8 sm:py-12">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">
-          Encontrá tu próxima <span className="text-primary-600">receta favorita</span>
-        </h1>
-        <p className="text-base sm:text-lg text-gray-500 max-w-2xl mx-auto px-2">
-          Descubrí comidas y postres deliciosos de todo el mundo.
-          Buscá por nombre, explorá por categoría o dejate inspirar con una receta random.
-        </p>
+    <div className="space-y-10 sm:space-y-14">
+      {/* Hero mejorado */}
+      <section className="relative text-center py-10 sm:py-16 px-4">
+        {/* Elementos decorativos */}
+        <div className="absolute top-0 left-1/4 w-32 h-32 bg-primary-100 rounded-full blur-3xl opacity-50" />
+        <div className="absolute top-10 right-1/4 w-24 h-24 bg-secondary-100 rounded-full blur-2xl opacity-50" />
+        
+        <div className="relative">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-4 sm:mb-5">
+            Encontrá tu próxima{' '}
+            <span className="text-gradient">receta favorita</span>
+          </h1>
+          <p className="text-base sm:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
+            Descubrí comidas y postres deliciosos de todo el mundo.
+            Buscá por nombre, explorá por categoría o dejate inspirar con una receta random.
+          </p>
+        </div>
       </section>
 
-      {/* Error con botón reintentar */}
+      {/* Error con diseño mejorado */}
       {error && !loading && (
-        <div className="text-center py-8 bg-red-50 rounded-xl border border-red-100">
-          <p className="text-red-600 mb-4">{error}</p>
+        <div className="text-center py-10 bg-white rounded-2xl border border-red-100 shadow-soft max-w-lg mx-auto">
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-50 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <p className="text-red-600 mb-5 font-medium">{error}</p>
           <button
             onClick={loadData}
-            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700
-                       transition-colors font-medium"
+            className="btn-primary"
           >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
             Reintentar
           </button>
         </div>
       )}
 
-      {/* Loading */}
+      {/* Loading con skeleton */}
       {loading && (
-        <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-2" />
-          <p className="text-gray-400">Cargando recetas...</p>
+        <div className="space-y-8">
+          {/* Featured skeleton */}
+          <div className="skeleton h-72 rounded-2xl" />
+          
+          {/* Categories skeleton */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="skeleton h-28 rounded-xl" />
+            ))}
+          </div>
         </div>
       )}
 
       {/* Receta destacada */}
       {!loading && !error && featured && (
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Elegida al azar</h2>
+        <section className="animate-fade-up">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary-400 to-primary-600 rounded-lg flex items-center justify-center shadow-md">
+              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-slate-800">Elegida al azar</h2>
+          </div>
+          
           <Link
             to={`/recipe/${featured.idMeal}`}
-            className="block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md
-                       transition-shadow border border-gray-100 md:flex"
+            className="group block bg-white rounded-3xl overflow-hidden shadow-soft hover:shadow-card-hover transition-all duration-300 md:flex"
           >
-            <div className="md:w-1/2">
+            <div className="md:w-1/2 relative overflow-hidden">
               <img
                 src={featured.strMealThumb}
                 alt={featured.strMeal}
-                className="w-full h-64 md:h-full object-cover"
+                className="w-full h-64 md:h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent md:hidden" />
             </div>
+            
             <div className="md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
-              <span className="text-xs font-medium px-2 py-1 bg-primary-50 text-primary-700 rounded-full w-fit mb-3">
-                {translateCategory(featured.strCategory)}
-              </span>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">{featured.strMeal}</h3>
-              <p className="text-gray-500 text-sm line-clamp-3">
+              {featured.strCategory && (
+                <span className="badge-primary w-fit mb-4 shadow-sm">
+                  {translateCategory(featured.strCategory)}
+                </span>
+              )}
+              <h3 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors">
+                {featured.strMeal}
+              </h3>
+              <p className="text-slate-500 text-sm leading-relaxed line-clamp-3 mb-5">
                 {featured.strInstructions}
               </p>
-              <span className="mt-4 text-primary-600 font-medium text-sm">
-                Ver receta completa →
+              <span className="inline-flex items-center gap-2 text-primary-600 font-semibold group-hover:gap-3 transition-all">
+                Ver receta completa
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
               </span>
             </div>
           </Link>
@@ -111,24 +148,43 @@ export default function Home() {
 
       {/* Categorías */}
       {!loading && !error && categories.length > 0 && (
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Explorar por categoría</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {categories.map((cat) => (
+        <section className="animate-fade-up delay-200">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-8 h-8 bg-gradient-to-br from-secondary-400 to-secondary-600 rounded-lg flex items-center justify-center shadow-md">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-slate-800">Explorar por categoría</h2>
+          </div>
+          
+          {/* Categorías como pills */}
+          <div className="flex flex-wrap gap-3">
+            {categories.map((cat, index) => (
               <Link
                 key={cat.idCategory}
                 to={`/search?category=${encodeURIComponent(cat.strCategory)}`}
-                className="group bg-white rounded-xl p-4 text-center shadow-sm hover:shadow-md
-                           transition-shadow border border-gray-100"
+                className="group flex items-center gap-3 px-5 py-3 bg-white rounded-2xl shadow-soft border border-slate-100 
+                           hover:shadow-card-hover hover:-translate-y-1 hover:border-primary-200
+                           transition-all duration-300 animate-fade-up"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <img
                   src={cat.strCategoryThumb}
                   alt={cat.strCategory}
-                  className="w-16 h-16 mx-auto mb-2 rounded-full object-cover"
+                  className="w-12 h-12 rounded-full object-cover shadow-inner group-hover:scale-110 transition-transform duration-300"
                 />
-                <span className="text-sm font-medium text-gray-700 group-hover:text-primary-600">
+                <span className="font-medium text-slate-700 group-hover:text-primary-600 transition-colors">
                   {translateCategory(cat.strCategory)}
                 </span>
+                <svg 
+                  className="w-4 h-4 text-slate-400 group-hover:text-primary-500 group-hover:translate-x-1 transition-all" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
             ))}
           </div>
