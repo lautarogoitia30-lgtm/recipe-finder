@@ -272,14 +272,28 @@ export const MEASURES_ES = {
   'cup': 'taza',
   'cups': 'tazas',
   'tbsp': 'cda',
+  'tablespoon': 'cda',
+  'tablespoons': 'cda',
   'tsp': 'cdta',
-  'oz': 'onzas',
-  'lb': 'libras',
-  'lbs': 'libras',
+  'teaspoon': 'cdta',
+  'teaspoons': 'cdta',
+  'oz': 'oz',
+  'ounce': 'onza',
+  'ounces': 'onzas',
+  'lb': 'lb',
+  'lbs': 'lbs',
+  'pound': 'libra',
+  'pounds': 'libras',
   'g': 'g',
+  'gram': 'gramo',
+  'grams': 'gramos',
   'kg': 'kg',
+  'kilogram': 'kilo',
+  'kilograms': 'kilos',
   'ml': 'ml',
   'l': 'l',
+  'liter': 'litro',
+  'liters': 'litros',
   'pinch': 'pizca',
   'handful': 'puñado',
   'slice': 'rebanada',
@@ -293,7 +307,50 @@ export const MEASURES_ES = {
   'clove': 'diente',
   'cloves': 'dientes',
   'sprig': 'rama',
+  'sprigs': 'ramas',
   'inch': 'pulgada',
+  'inches': 'pulgadas',
+  'can': 'lata',
+  'cans': 'latas',
+  'packet': 'paquete',
+  'packets': 'paquetes',
+  'jar': 'frasco',
+  'jars': 'frascos',
+  'bottle': 'botella',
+  'bottles': 'botellas',
+  'bag': 'bolsa',
+  'bags': 'bolsas',
+  'bunch': 'manojo',
+  'bunches': 'manojos',
+  'head': 'cabeza',
+  'heads': 'cabezas',
+  'stalk': 'tallo',
+  'stalks': 'tallos',
+  'strip': 'tira',
+  'strips': 'tiras',
+  'cube': 'cubo',
+  'cubes': 'cubos',
+  'sheet': 'hoja',
+  'sheets': 'hojas',
+  'pinch': 'pizca',
+  'dash': ' chorrito',
+  'drop': 'gota',
+  'drops': 'gotas',
+  'to taste': 'a gusto',
+  'finely chopped': 'finamente picado',
+  'roughly chopped': 'picado grueso',
+  'sliced': 'rebanado',
+  'grated': 'rallado',
+  'shredded': 'desmenuzado',
+  'melted': 'derretido',
+  'softened': 'ablandado',
+  'fresh': 'fresco',
+  'dried': 'seco',
+  'chopped': 'picado',
+  'minced': 'molido',
+  'freshly': 'recién',
+  'ground': 'molido',
+  'optional': 'opcional',
 }
 
 /**
@@ -326,11 +383,36 @@ export function translateArea(area) {
  */
 export function translateMeasure(measure) {
   if (!measure) return measure
+  
+  // Limpiar HTML entities
   let result = measure
-  // Replace known English measures
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#xA0;/g, ' ')
+    .replace(/&#160;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  
+  // Primero, intentamos con las traducciones del diccionario (más rápido)
   for (const [en, es] of Object.entries(MEASURES_ES)) {
-    const regex = new RegExp(`\\b${en}\\b`, 'gi')
-    result = result.replace(regex, es)
+    // Reemplazar palabras completas, con o sin 's' final
+    const regex = new RegExp(`\\b${en}(s)?\\b`, 'gi')
+    result = result.replace(regex, (match, hasS) => {
+      // Si ya terminaba en 's' y la traducción NO termina en 's', no agregar otra 's'
+      const translation = es
+      if (hasS && !translation.endsWith('s') && !translation.endsWith('z')) {
+        return translation + 's'
+      }
+      return translation
+    })
   }
+  
+  // Limpiar espacios dobles
+  result = result.replace(/\s+/g, ' ').trim()
+  
+  // Capitalizar primera letra si empieza con letra
+  if (result.length > 0 && /[a-záéíóúñ]/.test(result[0])) {
+    result = result[0].toUpperCase() + result.slice(1)
+  }
+  
   return result
 }

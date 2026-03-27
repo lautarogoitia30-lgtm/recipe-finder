@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getRecipeDetail } from '../api'
 import { translateIngredient, translateMeasure, translateCategory, translateArea } from '../translations'
-import { translateRecipeName, translateInstructions } from '../translationService'
+import { translateRecipeName, translateInstructions, translateIngredientList, clearTranslationCache, cleanHtmlEntities } from '../translationService'
 import FavoriteButton from '../components/FavoriteButton'
 
 export default function RecipeDetail() {
@@ -13,24 +13,48 @@ export default function RecipeDetail() {
   const [translating, setTranslating] = useState(false)
   const [translatedName, setTranslatedName] = useState('')
   const [translatedInstructions, setTranslatedInstructions] = useState('')
+  const [translatedIngredients, setTranslatedIngredients] = useState([])
   const [showTranslation, setShowTranslation] = useState(true)
 
-  const loadRecipe = useCallback(async () => {
+  const loadRecipe = useCallback(async (forceRefreshTranslation = false) => {
     setLoading(true)
     setError(null)
     setTranslating(true)
+    
+    // Si se pide forzar traducción, limpiar cache
+    if (forceRefreshTranslation) {
+      clearTranslationCache()
+    }
+    
     try {
       const data = await getRecipeDetail(id)
       setRecipe(data.recipe)
       
-      // Traducir nombre e instrucciones
+      // Traducir nombre, instrucciones e ingredientes
       if (data.recipe) {
-        const [name, instructions] = await Promise.all([
+        // Extraer ingredientes primero
+        const rawIngredients = []
+        for (let i = 1; i <= 20; i++) {
+          const ingredient = data.recipe[`strIngredient${i}`]
+          const measure = data.recipe[`strMeasure${i}`]
+          if (ingredient?.trim()) {
+            rawIngredients.push({
+              ingredient: ingredient.trim(),
+              measure: translateMeasure(measure?.trim() || ''),
+            })
+          }
+        }
+        
+        // Traducir todo en paralelo
+        const [name, instructions, transIngredients] = await Promise.all([
           translateRecipeName(data.recipe.strMeal),
-          translateInstructions(data.recipe.strInstructions)
+          translateInstructions(data.recipe.strInstructions),
+          translateIngredientList(rawIngredients)
         ])
+        
         setTranslatedName(name)
         setTranslatedInstructions(instructions)
+        setTranslatedIngredients(transIngredients)
       }
     } catch (err) {
       setError(err.message || 'No se pudo cargar la receta')
@@ -89,18 +113,23 @@ export default function RecipeDetail() {
     )
   }
 
-  // Extraer ingredientes + medidas (traducidos)
-  const ingredients = []
-  for (let i = 1; i <= 20; i++) {
-    const ingredient = recipe[`strIngredient${i}`]
-    const measure = recipe[`strMeasure${i}`]
-    if (ingredient?.trim()) {
-      ingredients.push({
-        ingredient: translateIngredient(ingredient.trim()),
-        measure: translateMeasure(measure?.trim() || ''),
-      })
-    }
-  }
+  // Usar ingredientes traducidos o los del diccionario
+  const ingredients = translatedIngredients.length > 0 
+    ? translatedIngredients 
+    : (() => {
+        const raw = []
+        for (let i = 1; i <= 20; i++) {
+          const ingredient = recipe[`strIngredient${i}`]
+          const measure = recipe[`strMeasure${i}`]
+          if (ingredient?.trim()) {
+            raw.push({
+              ingredient: translateIngredient(ingredient.trim()),
+              measure: translateMeasure(measure?.trim() || ''),
+            })
+          }
+        }
+        return raw
+      })()
 
   // Usar traducción o original
   const displayName = showTranslation && translatedName ? translatedName : recipe.strMeal
@@ -132,7 +161,7 @@ export default function RecipeDetail() {
 
       {/* Toggle traducción */}
       {translatedName && translatedInstructions && (
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
           <button
             onClick={() => setShowTranslation(!showTranslation)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
@@ -145,6 +174,17 @@ export default function RecipeDetail() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
             </svg>
             {showTranslation ? 'Ver en inglés' : 'Ver en español'}
+          </button>
+          
+          <button
+            onClick={() => loadRecipe(true)}
+            className="flex items-center gap-2 px-3 py-2 text-xs text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
+            title="Forzar nueva traducción"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Retraducir
           </button>
         </div>
       )}
@@ -218,7 +258,7 @@ export default function RecipeDetail() {
                   </div>
                   <span className="text-slate-700 font-medium">{item.ingredient}</span>
                 </div>
-                <span className="text-slate-500 font-medium">{item.measure}</span>
+                <span className="text-slate-500 font-medium">{cleanHtmlEntities(item.measure)}</span>
               </div>
             ))}
           </div>
