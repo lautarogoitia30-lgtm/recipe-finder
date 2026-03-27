@@ -13,8 +13,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 RUN python manage.py collectstatic --noinput 2>/dev/null || true
-RUN chmod +x entrypoint.sh
 
-EXPOSE 8000
-
-CMD ["./entrypoint.sh"]
+CMD ["sh", "-c", "python manage.py migrate --noinput 2>/dev/null; gunicorn recipe_finder.wsgi --bind 0.0.0.0:${PORT} --timeout 120"]
